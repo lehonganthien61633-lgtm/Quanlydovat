@@ -1351,15 +1351,15 @@
         if (!name || !phone || !pass || !cccd) { alert("Vui lòng điền đủ thông tin!"); return; }
         if (!/^\d{12}$/.test(cccd)) { alert("Số CCCD bắt buộc phải nhập đúng 12 chữ số!"); return; } 
         
-        // Mẹo: Firebase Auth yêu cầu Email, nên ta sẽ ánh xạ SĐT thành 1 email giả lập
+        // Mẹo: Firebase Auth yêu cầu Email, ánh xạ SĐT thành email định dạng riêng của hệ thống
         let fakeEmail = phone + "@thientruong.com"; 
 
         try {
-            // 1. Tạo tài khoản trên hệ thống Firebase Auth TRƯỚC
+            // 1. Tạo tài khoản trên hệ thống Firebase Auth
             const userCredential = await auth.createUserWithEmailAndPassword(fakeEmail, pass);
             fbToken = await userCredential.user.getIdToken();
             
-            // 2. Lúc này có token, lệnh tải DB sẽ tự qua được ải "auth != null"
+            // 2. Xử lý lưu trữ thông tin phụ vào Realtime Database
             let newId = 'UID' + Math.floor(100000 + Math.random() * 900000);
             
             let res = await fetch(AUTH_DB_URL);
@@ -1368,7 +1368,7 @@
 
             if (systemUsers[phone]) { 
                 alert("Số điện thoại này đã tồn tại trong Database!"); 
-                await auth.currentUser.delete(); // Hủy đăng ký trên Auth nếu DB đã có
+                await auth.currentUser.delete(); // Hủy đăng ký trên Auth nếu DB đã trùng
                 return; 
             }
 
@@ -1382,13 +1382,18 @@
 
             alert("Đăng ký thành công! Vui lòng đăng nhập.\n\nID Tài khoản của bạn là: " + newId);
             
-            // Ép đăng xuất Auth để người dùng chuyển sang quy trình Login
+            // Đăng xuất ngay lập tức để người dùng tự nhập lại ở màn hình Login
             await auth.signOut();
             switchAuth('login');
             document.getElementById('login-phone').value = phone;
         } catch(error) {
+            console.error("Firebase Auth Error:", error);
             if (error.code === 'auth/email-already-in-use') {
-                alert("Số điện thoại này đã được đăng ký!");
+                alert("Số điện thoại này đã được đăng ký trên hệ thống!");
+            } else if (error.code === 'auth/operation-not-allowed') {
+                alert("LỖI: Bạn chưa bật phương thức đăng nhập Email/Password trong Firebase Console!");
+            } else if (error.code === 'auth/weak-password') {
+                alert("Mật khẩu quá yếu! Hãy nhập ít nhất 6 ký tự.");
             } else {
                 alert("Lỗi đăng ký: " + error.message);
             }
@@ -1455,39 +1460,7 @@
         document.getElementById('modal-change-pass').style.display = 'block';
     }
 
-    async function confirmChangePass() { // Đổi thành async
-        let oldP = document.getElementById('cp-old').value;
-        let newP = document.getElementById('cp-new').value;
-        let isForced = systemUsers[activeUserPhone].mustChangePass;
-
-        if (!newP) return alert("Vui lòng nhập mật khẩu mới!");
-        
-        try {
-            // Đổi trên lõi Firebase Auth
-            if (!isForced) {
-                if (!oldP) return alert("Vui lòng nhập mật khẩu hiện tại!");
-                // Yêu cầu tái xác thực để Firebase cho phép đổi pass
-                const credential = firebase.auth.EmailAuthProvider.credential(activeUserPhone + "@thientruong.com", oldP);
-                await auth.currentUser.reauthenticateWithCredential(credential);
-            }
-            
-            await auth.currentUser.updatePassword(newP);
-
-            // Đổi trên Realtime Database để đồng bộ
-            systemUsers[activeUserPhone].password = newP;
-            systemUsers[activeUserPhone].mustChangePass = false; 
-            saveAuthDBSilent();
-            
-            alert("Đổi mật khẩu thành công!");
-            document.getElementById('modal-change-pass').style.display = 'none';
-        } catch (error) {
-            if (error.code === 'auth/wrong-password') {
-                alert("Mật khẩu cũ không chính xác!");
-            } else {
-                alert("Lỗi bảo mật: " + error.message);
-            }
-        }
-    }
+    async function confirmChangePass() {
     // --- KẾT THÚC BỔ SUNG HÀM ĐỔI MẬT KHẨU ---
 
     function handleLogout() {
@@ -1506,11 +1479,11 @@
         let fakeEmail = phone + "@thientruong.com";
 
         try {
-            // Xác thực hệ thống chính quy trước
+            // Xác thực với hệ thống Firebase Auth lõi
             const userCredential = await auth.signInWithEmailAndPassword(fakeEmail, pass);
             fbToken = await userCredential.user.getIdToken();
             
-            // Đã có chứng nhận an toàn, load Database
+            // Sau khi có Token, tải DB (Cho dù rule đang là true hay auth != null, luồng này vẫn an toàn)
             await loadAuthDB();
             
             if (!systemUsers[phone]) { alert("Tài khoản không tồn tại trên hệ thống dữ liệu!"); return; }
@@ -1547,8 +1520,12 @@
                 }, 500);
             }
         } catch(error) {
-            console.error(error);
-            alert("Sai mật khẩu hoặc tài khoản không tồn tại!");
+            console.error("Firebase Login Error:", error);
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                alert("Sai mật khẩu hoặc tài khoản không tồn tại!");
+            } else {
+                alert("Lỗi đăng nhập: " + error.message);
+            }
             generateCaptcha();
         }
     }
