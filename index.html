@@ -1112,7 +1112,45 @@
 </div>
 // [KẾT THÚC SỬA]
 </div>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 <script>
+    // --- KHỞI TẠO FIREBASE AUTHENTICATION ---
+    const firebaseConfig = {
+        apiKey: "NHAP_API_KEY_CUA_BAN_VAO_DAY",
+        authDomain: "quanlydovat-default-rtdb.firebaseapp.com", 
+        databaseURL: "https://quanlydovat-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "quanlydovat",
+        storageBucket: "quanlydovat.appspot.com",
+        messagingSenderId: "SENDER_ID",
+        appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    let fbToken = ""; // Biến toàn cục lưu Token bảo mật
+
+    // Theo dõi trạng thái đăng nhập để lấy Token
+    auth.onIdTokenChanged(async (user) => {
+        if (user) {
+            fbToken = await user.getIdToken();
+        } else {
+            fbToken = "";
+        }
+    });
+
+    // KỸ THUẬT INTERCEPTOR: Tự động đính kèm Token vào MỌI lệnh fetch() gọi đến Firebase
+    const originalFetch = window.fetch;
+    window.fetch = async function() {
+        let args = Array.prototype.slice.call(arguments);
+        if (typeof args[0] === 'string' && args[0].includes('firebasedatabase.app')) {
+            if (fbToken) {
+                let urlObj = new URL(args[0]);
+                urlObj.searchParams.set('auth', fbToken); // Nối ?auth=TOKEN vào API
+                args[0] = urlObj.toString();
+            }
+        }
+        return originalFetch.apply(this, args);
+    };
     // --- MODULE AUTH JAVASCRIPT (UPGRADED ENGINE) ---
     const AUTH_DB_URL = "https://quanlydovat-default-rtdb.asia-southeast1.firebasedatabase.app/systemDB.json"; 
     let systemUsers = {};
@@ -1304,7 +1342,7 @@
     }
 
     // [BẮT ĐẦU SỬA: Hàm handleRegister]
-    async function handleRegister() { // Đã chuyển thành Async
+    async function handleRegister() { 
         let name = document.getElementById('reg-name').value.trim().toUpperCase();
         let phone = document.getElementById('reg-phone').value.trim();
         let pass = document.getElementById('reg-pass').value;
@@ -1312,29 +1350,50 @@
 
         if (!name || !phone || !pass || !cccd) { alert("Vui lòng điền đủ thông tin!"); return; }
         if (!/^\d{12}$/.test(cccd)) { alert("Số CCCD bắt buộc phải nhập đúng 12 chữ số!"); return; } 
-        if (systemUsers[phone]) { alert("Số điện thoại này đã được đăng ký!"); return; }
-
-        let newId; let exists = true;
-        while(exists) {
-            newId = 'UID' + Math.floor(100000 + Math.random() * 900000);
-            exists = Object.values(systemUsers).some(u => u.id === newId);
-        }
-
-        systemUsers[phone] = { 
-            id: newId, name: name, password: pass, cccd: cccd, role: 'user', 
-            forgotPassword: false, cccdChangeCount: 0, cccdLastChanged: '--', pendingCccd: null, notifyCccd: false,
-            syncedToMaster: true // Đánh dấu đồng bộ với Master
-        };
-        saveAuthDBSilent(); 
         
-        // Bắt buộc đợi lệnh cập nhật Master Firebase xong mới báo thành công
-        await syncToMasterDB(phone);
+        // Mẹo: Firebase Auth yêu cầu Email, nên ta sẽ ánh xạ SĐT thành 1 email giả lập
+        let fakeEmail = phone + "@thientruong.com"; 
 
-        alert("Đăng ký thành công! Vui lòng đăng nhập.\n\nID Tài khoản của bạn là: " + newId);
-        switchAuth('login');
-        document.getElementById('login-phone').value = phone;
+        try {
+            // 1. Tạo tài khoản trên hệ thống Firebase Auth TRƯỚC
+            const userCredential = await auth.createUserWithEmailAndPassword(fakeEmail, pass);
+            fbToken = await userCredential.user.getIdToken();
+            
+            // 2. Lúc này có token, lệnh tải DB sẽ tự qua được ải "auth != null"
+            let newId = 'UID' + Math.floor(100000 + Math.random() * 900000);
+            
+            let res = await fetch(AUTH_DB_URL);
+            let data = await res.json();
+            if (data && data.users) systemUsers = data.users;
+
+            if (systemUsers[phone]) { 
+                alert("Số điện thoại này đã tồn tại trong Database!"); 
+                await auth.currentUser.delete(); // Hủy đăng ký trên Auth nếu DB đã có
+                return; 
+            }
+
+            systemUsers[phone] = { 
+                id: newId, name: name, password: pass, cccd: cccd, role: 'user', 
+                forgotPassword: false, cccdChangeCount: 0, cccdLastChanged: '--', pendingCccd: null, notifyCccd: false,
+                syncedToMaster: true 
+            };
+            saveAuthDBSilent(); 
+            await syncToMasterDB(phone);
+
+            alert("Đăng ký thành công! Vui lòng đăng nhập.\n\nID Tài khoản của bạn là: " + newId);
+            
+            // Ép đăng xuất Auth để người dùng chuyển sang quy trình Login
+            await auth.signOut();
+            switchAuth('login');
+            document.getElementById('login-phone').value = phone;
+        } catch(error) {
+            if (error.code === 'auth/email-already-in-use') {
+                alert("Số điện thoại này đã được đăng ký!");
+            } else {
+                alert("Lỗi đăng ký: " + error.message);
+            }
+        }
     }
-// [KẾT THÚC SỬA]
     function handleForgotPassword() {
         let phone = document.getElementById('forgot-phone').value.trim();
         let cccd = document.getElementById('forgot-cccd').value.trim();
@@ -1363,7 +1422,10 @@
     }
 
     function handleLogoutSilent() {
+        auth.signOut(); // Khóa phiên Firebase Auth
+        fbToken = "";   // Xóa sạch Token truy cập
         activeUserPhone = null;
+        
         // Xóa sạch cache dữ liệu để không bị lẫn khi tài khoản khác đăng nhập
         allWeeksData = {};
         expenseData = {};
@@ -1393,24 +1455,38 @@
         document.getElementById('modal-change-pass').style.display = 'block';
     }
 
-    function confirmChangePass() {
+    async function confirmChangePass() { // Đổi thành async
         let oldP = document.getElementById('cp-old').value;
         let newP = document.getElementById('cp-new').value;
         let isForced = systemUsers[activeUserPhone].mustChangePass;
 
         if (!newP) return alert("Vui lòng nhập mật khẩu mới!");
         
-        if (!isForced) {
-            if (!oldP) return alert("Vui lòng nhập mật khẩu hiện tại!");
-            if (systemUsers[activeUserPhone].password !== oldP) return alert("Mật khẩu cũ không chính xác!");
-        }
+        try {
+            // Đổi trên lõi Firebase Auth
+            if (!isForced) {
+                if (!oldP) return alert("Vui lòng nhập mật khẩu hiện tại!");
+                // Yêu cầu tái xác thực để Firebase cho phép đổi pass
+                const credential = firebase.auth.EmailAuthProvider.credential(activeUserPhone + "@thientruong.com", oldP);
+                await auth.currentUser.reauthenticateWithCredential(credential);
+            }
+            
+            await auth.currentUser.updatePassword(newP);
 
-        systemUsers[activeUserPhone].password = newP;
-        systemUsers[activeUserPhone].mustChangePass = false; // Tắt cờ ép đổi
-        saveAuthDBSilent();
-        
-        alert("Đổi mật khẩu thành công!");
-        document.getElementById('modal-change-pass').style.display = 'none';
+            // Đổi trên Realtime Database để đồng bộ
+            systemUsers[activeUserPhone].password = newP;
+            systemUsers[activeUserPhone].mustChangePass = false; 
+            saveAuthDBSilent();
+            
+            alert("Đổi mật khẩu thành công!");
+            document.getElementById('modal-change-pass').style.display = 'none';
+        } catch (error) {
+            if (error.code === 'auth/wrong-password') {
+                alert("Mật khẩu cũ không chính xác!");
+            } else {
+                alert("Lỗi bảo mật: " + error.message);
+            }
+        }
     }
     // --- KẾT THÚC BỔ SUNG HÀM ĐỔI MẬT KHẨU ---
 
@@ -1419,50 +1495,63 @@
     }
 
     // [BẮT ĐẦU SỬA: Hàm handleLogin]
-    async function handleLogin() { // Đã chuyển thành Async
+    async function handleLogin() { 
         let phone = document.getElementById('login-phone').value.trim();
         let pass = document.getElementById('login-pass').value;
         let cap = document.getElementById('login-captcha').value;
 
         if (!phone || !pass || !cap) { alert("Vui lòng nhập đủ Số điện thoại, Mật khẩu và Mã xác nhận!"); return; }
         if (cap !== currentCaptchaCode) { alert("Mã Captcha không chính xác!"); generateCaptcha(); return; }
-        if (!systemUsers[phone]) { alert("Tài khoản không tồn tại!"); return; }
-        if (systemUsers[phone].password !== pass) { alert("Sai mật khẩu!"); return; }
+        
+        let fakeEmail = phone + "@thientruong.com";
 
-        if (systemUsers[phone].forceLogout) {
-            systemUsers[phone].forceLogout = false;
+        try {
+            // Xác thực hệ thống chính quy trước
+            const userCredential = await auth.signInWithEmailAndPassword(fakeEmail, pass);
+            fbToken = await userCredential.user.getIdToken();
+            
+            // Đã có chứng nhận an toàn, load Database
+            await loadAuthDB();
+            
+            if (!systemUsers[phone]) { alert("Tài khoản không tồn tại trên hệ thống dữ liệu!"); return; }
+
+            if (systemUsers[phone].forceLogout) {
+                systemUsers[phone].forceLogout = false;
+                saveAuthDBSilent();
+            }
+
+            systemUsers[phone].syncedToMaster = true;
             saveAuthDBSilent();
-        }
+            await syncToMasterDB(phone);
 
-        // Tự động sao lưu và ghi nhận tài khoản lên hệ thống Master khi người dùng đăng nhập
-        systemUsers[phone].syncedToMaster = true;
-        saveAuthDBSilent();
-        await syncToMasterDB(phone);
+            activeUserPhone = phone;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block'; 
+            
+            let uName = systemUsers[phone].name || 'USER';
+            document.getElementById('user-display-name').innerText = `👤 ${uName} - Đang thao tác`;
+            document.getElementById('login-pass').value = '';
 
-        activeUserPhone = phone;
-        document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('main-app').style.display = 'block'; 
-        
-        let uName = systemUsers[phone].name || 'USER';
-        document.getElementById('user-display-name').innerText = `👤 ${uName} - Đang thao tác`;
-        document.getElementById('login-pass').value = '';
+            if (systemUsers[phone].role === 'admin' || phone === '0839578432') {
+                document.getElementById('nav-admin').style.display = 'block';
+            } else {
+                document.getElementById('nav-admin').style.display = 'none';
+            }
+            
+            startOriginalApp();
 
-        if (systemUsers[phone].role === 'admin' || phone === '0839578432') {
-            document.getElementById('nav-admin').style.display = 'block';
-        } else {
-            document.getElementById('nav-admin').style.display = 'none';
-        }
-        
-        startOriginalApp();
-
-        if (systemUsers[phone].mustChangePass) {
-            setTimeout(() => {
-                alert("⚠️ BẢO MẬT: Mật khẩu hiện tại là mặc định/tự sinh. Vui lòng đổi mật khẩu mới ngay!");
-                openChangePassModal(); 
-            }, 500);
+            if (systemUsers[phone].mustChangePass) {
+                setTimeout(() => {
+                    alert("⚠️ BẢO MẬT: Mật khẩu hiện tại là mặc định/tự sinh. Vui lòng đổi mật khẩu mới ngay!");
+                    openChangePassModal(); 
+                }, 500);
+            }
+        } catch(error) {
+            console.error(error);
+            alert("Sai mật khẩu hoặc tài khoản không tồn tại!");
+            generateCaptcha();
         }
     }
-// [KẾT THÚC SỬA]
 
     // --- LOGIC ACCOUNT & CCCD ---
     function loadAccountInfo() {
