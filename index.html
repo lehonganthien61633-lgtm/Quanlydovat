@@ -1460,7 +1460,40 @@
         document.getElementById('modal-change-pass').style.display = 'block';
     }
 
-    async function confirmChangePass() {
+   async function confirmChangePass() { 
+        let oldP = document.getElementById('cp-old').value;
+        let newP = document.getElementById('cp-new').value;
+        let isForced = systemUsers[activeUserPhone].mustChangePass;
+
+        if (!newP) return alert("Vui lòng nhập mật khẩu mới!");
+        
+        try {
+            // Thay đổi mật khẩu trong lõi Firebase Auth
+            if (!isForced) {
+                if (!oldP) return alert("Vui lòng nhập mật khẩu hiện tại!");
+                // Firebase yêu cầu xác thực lại trước khi đổi mật khẩu
+                const credential = firebase.auth.EmailAuthProvider.credential(activeUserPhone + "@thientruong.com", oldP);
+                await auth.currentUser.reauthenticateWithCredential(credential);
+            }
+            
+            await auth.currentUser.updatePassword(newP);
+
+            // Đồng bộ mật khẩu mới xuống Realtime Database
+            systemUsers[activeUserPhone].password = newP;
+            systemUsers[activeUserPhone].mustChangePass = false; 
+            saveAuthDBSilent();
+            
+            alert("Đổi mật khẩu thành công!");
+            document.getElementById('modal-change-pass').style.display = 'none';
+        } catch (error) {
+            console.error("Change Password Error:", error);
+            if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                alert("Mật khẩu cũ không chính xác!");
+            } else {
+                alert("Lỗi bảo mật: " + error.message);
+            }
+        }
+    }
     // --- KẾT THÚC BỔ SUNG HÀM ĐỔI MẬT KHẨU ---
 
     function handleLogout() {
