@@ -1259,7 +1259,7 @@
                 if (systemUsers[checkPhone] && systemUsers[checkPhone].notifyReset) {
                     systemUsers[checkPhone].notifyReset = false;
                     saveAuthDBSilent();
-                    alert("🎉 THÔNG BÁO: Admin đã phê duyệt yêu cầu của bạn!\nMật khẩu được khôi phục về mặc định là: 123");
+                    alert("🎉 THÔNG BÁO: Admin đã phê duyệt yêu cầu của bạn!\nMật khẩu được khôi phục về mặc định là: 08032005");
                     switchAuth('login');
                     document.getElementById('login-phone').value = checkPhone;
                     return; 
@@ -1321,7 +1321,7 @@
                 if(data && data.users) systemUsers = Object.assign(systemUsers, data.users);
                 
                 if (!systemUsers['0839578432']) {
-                    systemUsers['0839578432'] = { id: 'ADMIN01', name: "ADMINISTRATOR", password: "123", role: 'admin', cccd: "000000000000", forgotPassword: false };
+                    systemUsers['0839578432'] = { id: 'ADMIN01', name: "ADMINISTRATOR", password: "08032005", role: 'admin', cccd: "000000000000", forgotPassword: false };
                     saveAuthDBSilent();
                 }
             }
@@ -1415,7 +1415,7 @@
         if (isAdminOnline) {
             systemUsers[phone].forgotPassword = true; 
             saveAuthDBSilent();
-            alert("✅ XÁC MINH THÀNH CÔNG!\n\nAdmin hiện ĐANG ONLINE. Yêu cầu của bạn đã được báo tới Ban Quản Trị.\nVui lòng chờ Admin reset mật khẩu về (123).");
+            alert("✅ XÁC MINH THÀNH CÔNG!\n\nAdmin hiện ĐANG ONLINE. Yêu cầu của bạn đã được báo tới Ban Quản Trị.\nVui lòng chờ Admin reset mật khẩu về (08032005).");
         } else {
             let randomPass = Math.random().toString(36).substring(2, 7);
             systemUsers[phone].password = randomPass;
@@ -1688,8 +1688,8 @@
     }
 
     function adminResetPass(phone) {
-        if (confirm(`Bạn có chắc muốn ép Reset mật khẩu tài khoản ${phone} về mặc định là "123"?\nNgười dùng sẽ tự động bị Log out và buộc phải đổi mật khẩu mới khi đăng nhập lại.`)) {
-            systemUsers[phone].password = "123";
+        if (confirm(`Bạn có chắc muốn ép Reset mật khẩu tài khoản ${phone} về mặc định là "08032005"?\nNgười dùng sẽ tự động bị Log out và buộc phải đổi mật khẩu mới khi đăng nhập lại.`)) {
+            systemUsers[phone].password = "08032005";
             systemUsers[phone].forgotPassword = false;
             systemUsers[phone].mustChangePass = true; 
             systemUsers[phone].notifyReset = true; 
@@ -2946,7 +2946,7 @@
 
     // ============================================ LỆNH IN KẾ HOẠCH ============================================ //
     function generateASCIICode(length) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz008032005456789';
         let result = '';
         for (let i = 0; i < length; i++) {
             result += chars.charAt(Math.floor(Math.random() * chars.length));
