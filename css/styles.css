@@ -216,3 +216,68 @@ table.data-table th {
     color: #2c3e50;
     text-decoration: underline;
 }
+.menu-btn {
+    font-size: 26px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: white;
+    margin-right: 15px;
+    padding: 0;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #fdfdfd;
+    min-width: 280px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 100;
+    top: 40px; /* Căn chỉnh khoảng cách từ viền navbar xuống */
+    left: 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    color: #222; /* Màu chữ đen xám nhẹ */
+    border-bottom: 1px dashed #ccc; /* Đường kẻ nét đứt */
+    font-family: "Times New Roman", Times, serif; /* Font giống ảnh */
+    font-size: 18px;
+    transition: background-color 0.2s ease;
+}
+
+.menu-item:last-child {
+    border-bottom: none;
+}
+
+/* Hiệu ứng khi hover hoặc mục đang active (như mục Thời gian trong ảnh) */
+.menu-item:hover, .menu-item.active {
+    background-color: #f0f0f0; 
+}
+
+.menu-item .icon {
+    width: 30px;
+    text-align: center;
+    margin-right: 15px;
+    font-size: 18px;
+}
+
+/* Lớp CSS dành riêng cho các mục chữ màu in đậm ở dưới */
+.menu-item.bold-item {
+    font-weight: bold;
+}
