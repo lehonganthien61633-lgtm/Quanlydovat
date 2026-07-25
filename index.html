@@ -671,6 +671,7 @@
 <div id="print-area"></div>
 
 <div class="container">
+    
     <div id="module-tong-quan" class="module">
         <h2 class="module-title">Tổng quan hệ thống</h2>
         
@@ -718,8 +719,7 @@
 
         <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 25px;">
             <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px;">Biểu đồ phân bổ xuất nhập & Vật tư</div>
-            <div style="display:flex; flex-direction:column; gap:10px;" id="tq-chart-bar-container">
-                </div>
+            <div style="display:flex; flex-direction:column; gap:10px;" id="tq-chart-bar-container"></div>
         </div>
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -739,7 +739,27 @@
             </div>
         </div>
     </div>
-// [KẾT THÚC SỬA]
+
+    <div id="module-ban-giao" class="module active">
+        <h2 class="module-title">Kiểm Kê Đầu Tuần</h2>
+        <div class="form-group">
+            <label>Kho chính (VNĐ):</label>
+            <input type="text" id="input-tien-mat" value="0">
+        </div>
+        <div class="form-group">
+            <label>Kho phụ (VNĐ):</label>
+            <input type="text" id="input-ngan-hang" value="0">
+        </div>
+        
+        <h3 style="text-align: center; font-size: 16px; margin-top: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Dự Kiến Nhập Kho</h3>
+        <div class="form-group">
+            <label>Kho chính (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-tm" value="0" class="readonly-input" readonly onclick="openModalThuNhapTM()" style="cursor: pointer !important;" title="Bấm để nhập mệnh giá tiền mặt">
+        </div>
+        <div class="form-group">
+            <label>Kho phụ (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-nh" value="0" class="readonly-input" readonly onclick="openModalThuNhapNH()" style="cursor: pointer !important;" title="Bấm để nhập thu nhập qua ngân hàng">
+        </div>
 
         <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
             <label>Tổng giá trị vật tư đầu tuần:</label>
@@ -754,12 +774,12 @@
                 </thead>
                 <tbody>
                     <tr>
-                        <td id="dudinh-ansang">0 đ</td>
-                        <td id="dudinh-antrua">0 đ</td>
-                        <td id="dudinh-antoi">0 đ</td>
-                        <td id="dudinh-dichuyen">0 đ</td>
-                        <td id="dudinh-tietkiem">0 đ</td>
-                        <td id="dudinh-khac">0 đ</td>
+                        <td id="summary-ansang">0 đ</td>
+                        <td id="summary-antrua">0 đ</td>
+                        <td id="summary-antoi">0 đ</td>
+                        <td id="summary-dichuyen">0 đ</td>
+                        <td id="summary-tietkiem">0 đ</td>
+                        <td id="summary-khac">0 đ</td>
                     </tr>
                 </tbody>
             </table>
@@ -768,7 +788,6 @@
             </div>
         </div>
     </div>
-
     <div id="module-thoi-gian" class="module">
         <h2 class="module-title">Thông Tin Thời Pháp</h2>
         <div class="form-group">
@@ -1811,8 +1830,9 @@
         daysArr.forEach(d => {
             if (!expenseData[d]) expenseData[d] = {};
             catsArr.forEach(c => {
-                if (!Array.isArray(expenseData[d][c])) expenseData[d][c] = [];
-            });
+        let el = document.getElementById(`summary-${c}`); // Đồng bộ ID từ dudinh sang summary để khớp HTML mới
+        if (el) el.innerText = formatVND(sums[c]);
+    });
         });
     }
 
