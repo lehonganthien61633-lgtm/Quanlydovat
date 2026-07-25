@@ -132,3 +132,19 @@ function filterInventory() {
         }
     });
 }
+function toggleMenu() {
+    document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Tự động đóng menu nếu người dùng click ra ngoài khoảng trắng
+window.onclick = function(event) {
+    if (!event.target.matches('.menu-btn') && !event.target.matches('.menu-btn i')) {
+        let dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            let openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
