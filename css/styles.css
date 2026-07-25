@@ -203,3 +203,16 @@ table.data-table th {
 .modal-footer {
     display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;
 }
+.auth-switch {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #64748b;
+    transition: color 0.2s ease;
+    font-weight: 500;
+}
+.auth-switch:hover {
+    color: #2c3e50;
+    text-decoration: underline;
+}
