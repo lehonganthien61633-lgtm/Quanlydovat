@@ -614,17 +614,19 @@
         <div class="dropdown">
             <button class="menu-btn" onclick="toggleMenu()">☰</button>
             <div id="myDropdown" class="dropdown-content">
-                <a onclick="switchModule('module-ban-giao')">Kiểm kê đầu tuần</a>
-                <a onclick="switchModule('module-thoi-gian')">Thời gian</a>
-                <div class="dropdown-submenu">
-                    <a onclick="switchModule('module-chi-tieu-tuan')">Nội dung xuất/nhập tuần »</a>
-                    <div class="dropdown-content-sub" id="submenu-days"></div>
-                </div>
-                <a onclick="switchModule('module-site-2')">Bảng Hệ Số Lưu Kho</a>
-                <a onclick="switchModule('module-ghi-chu')">Ghi chú</a>
-                <a onclick="switchModule('module-account'); loadAccountInfo();" style="color:#27ae60; font-weight: bold;">👤 Thông Tin Tài Khoản</a>
-                <a onclick="switchModule('module-in-an'); renderPrintHistory();"><span style="color:var(--info); font-weight:bold;">🖨️ In Kế Hoạch</span></a>
-                <a id="nav-admin" onclick="switchModule('module-admin'); renderAdminPanel();" style="display:none; color:#e74c3c; border-top: 1px solid #ccc; font-weight: bold;">🛡️ Quản Trị Hệ Thống</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#4a3b69; margin-right:8px;">🏠</span> Tổng quan</a>
+                <a onclick="switchModule('module-thoi-gian')"><span style="color:#3b5998; margin-right:8px;">🕒</span> Thời gian</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#5cb85c; margin-right:8px;">📥</span> Nhập kho</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#e67e22; margin-right:8px;">📤</span> Xuất kho</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#f1c40f; margin-right:8px;">🗂️</span> Danh mục vật phẩm</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#5b4b7a; margin-right:8px;">📍</span> Vị trí lưu trữ</a>
+                <a onclick="alert('Chức năng đang phát triển!')"><span style="color:#3498db; margin-right:8px;">🪟</span> Danh sách vật phẩm</a>
+                <a onclick="switchModule('module-account'); loadAccountInfo();" style="color:#27ae60; font-weight: bold;"><span style="margin-right:8px;">👤</span> Quản lý người dùng</a>
+                <a onclick="switchModule('module-in-an'); renderPrintHistory();" style="font-weight: bold;"><span style="color:#2c3e50; margin-right:8px;">🖨️</span> Báo cáo & Thống kê</a>
+                <a id="nav-admin" onclick="switchModule('module-admin'); renderAdminPanel();" style="display:none; color:#c0392b; font-weight: bold;"><span style="margin-right:8px;">🛡️</span> Bảo hành & Bảo trì</a>
+                <a onclick="alert('Chức năng đang phát triển!')" style="color:#2980b9; font-weight: bold;"><span style="color:#f1c40f; margin-right:8px;">🔍</span> Tìm kiếm</a>
+                <a onclick="alert('Chức năng đang phát triển!')" style="color:#a0522d; font-weight: bold;"><span style="margin-right:8px;">⚙️</span> Cài đặt hệ thống</a>
+                
                 <a onclick="openChangePassModal()" style="color:#0056b3; border-top: 1px dashed #ccc; font-weight: bold;">🔑 Đổi Mật Khẩu</a>
                 <a onclick="handleLogout()" style="color:#e74c3c; border-top: 1px solid #ccc; font-weight: bold;">🚪 Đăng Xuất</a>
             </div>
