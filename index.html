@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hệ Thống Quản Lý Đồ Vật - Thiên Trường Software</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
@@ -66,7 +67,28 @@
 
     <div id="main-app" style="display: none;">
         <nav class="navbar">
-            <h3>QUẢN LÝ ĐỒ VẬT VÀ TỒN KHO</h3>
+            <div style="display: flex; align-items: center;">
+                <div class="dropdown">
+                    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+                    <div id="myDropdown" class="dropdown-content">
+                        <a href="#" class="menu-item"><span class="icon" style="color: #4a356e;"><i class="fas fa-home"></i></span> Tổng quan</a>
+                        <a href="#" class="menu-item active"><span class="icon" style="color: #4169e1;"><i class="far fa-clock"></i></span> Thời gian</a>
+                        <a href="#" class="menu-item"><span class="icon" style="color: #5cb85c;"><i class="fas fa-box-open"></i></span> Nhập kho</a>
+                        <a href="#" class="menu-item"><span class="icon" style="color: #e67e22;"><i class="fas fa-box"></i></span> Xuất kho</a>
+                        <a href="#" class="menu-item"><span class="icon" style="color: #f0ad4e;"><i class="fas fa-sitemap"></i></span> Danh mục vật phẩm</a>
+                        <a href="#" class="menu-item"><span class="icon" style="color: #6a5acd;"><i class="fas fa-map-marker-alt"></i></span> Vị trí lưu trữ</a>
+                        <a href="#" class="menu-item"><span class="icon" style="color: #428bca;"><i class="fas fa-table"></i></span> Danh sách vật phẩm</a>
+                        
+                        <a href="#" class="menu-item bold-item" style="color: #569b76;"><span class="icon"><i class="fas fa-user"></i></span> Quản lý người dùng</a>
+                        <a href="#" class="menu-item bold-item" style="color: #2c1b4d;"><span class="icon"><i class="fas fa-print"></i></span> Báo cáo & Thống kê</a>
+                        <a href="#" class="menu-item bold-item" style="color: #c0392b;"><span class="icon"><i class="fas fa-shield-alt"></i></span> Bảo hành & Bảo trì</a>
+                        <a href="#" class="menu-item bold-item" style="color: #2980b9;"><span class="icon"><i class="fas fa-search"></i></span> Tìm kiếm</a>
+                        <a href="#" class="menu-item bold-item" style="color: #a0522d;"><span class="icon"><i class="fas fa-cog"></i></span> Cài đặt hệ thống</a>
+                    </div>
+                </div>
+                <h3>QUẢN LÝ ĐỒ VẬT VÀ TỒN KHO</h3>
+            </div>
+            
             <div class="nav-right">
                 <span id="user-display-name">👤 LOADING...</span>
                 <button id="btn-logout" class="btn btn-danger">Đăng Xuất 🚪</button>
