@@ -743,6 +743,22 @@
             <label>Tháng/Năm:</label>
             <input type="text" id="input-thang-nam" readonly style="width: 250px;">
         </div>
+        
+        <h3 style="margin-top: 30px; font-size: 18px; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Lịch Sử Thay Đổi Dữ Liệu</h3>
+        <div style="max-height: 250px; overflow-y: auto; border: 1px solid #ddd; background: #fafafa; padding: 10px;">
+            <table class="modal-table" style="margin-top: 0;">
+                <thead>
+                    <tr style="background-color: #e9ecef; position: sticky; top: 0; z-index: 5;">
+                        <th style="width: 15%;">STT</th>
+                        <th style="width: 45%;">Thời Gian Cập Nhật Cuối</th>
+                        <th style="width: 40%;">Tuần Tác Động</th>
+                    </tr>
+                </thead>
+                <tbody id="update-history-tbody">
+                    <tr><td colspan="3" style="color:#666; font-style:italic;">Chưa có lịch sử thay đổi...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div id="module-chi-tieu-tuan" class="module">
@@ -1736,6 +1752,7 @@
     let expenseData = {};
     let sampleExpenses = []; 
     let printHistory = []; 
+    let updateHistory = []; // Khai báo biến lưu lịch sử
     let currentDay = '';
     let currentCat = '';
     let targetRowForSample = null;
