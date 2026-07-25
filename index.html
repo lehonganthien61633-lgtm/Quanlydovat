@@ -3,60 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ Thống Quản Lý Đồ Vật</title>
+    <title>Hệ Thống Quản Lý Đồ Vật - Thiên Trường Software</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
+
     <div id="auth-screen" class="auth-wrapper">
         <div class="auth-box" id="login-box">
-            <div class="auth-logo">THIÊN TRƯỜNG SOFTWARE</div>
-            <div class="auth-subtitle">QUẢN LÝ KHO & ĐỒ VẬT</div>
+            <div class="auth-logo">THIÊN TRƯỜNG</div>
+            <div class="auth-subtitle">SOFTWARE SYSTEM</div>
             <div class="form-group">
-                <label>Email / SĐT</label>
-                <input type="text" id="login-email" placeholder="Nhập tài khoản...">
+                <label>SỐ ĐIỆN THOẠI / EMAIL</label>
+                <input type="text" id="login-email" placeholder="Nhập số điện thoại hoặc email...">
             </div>
             <div class="form-group">
-                <label>Mật Khẩu</label>
-                <input type="password" id="login-pass" placeholder="Nhập mật khẩu...">
+                <label>MẬT KHẨU</label>
+                <input type="password" id="login-pass" placeholder="Nhập mật khẩu nhập kho...">
             </div>
-            <button class="btn-main" id="btn-login">ĐĂNG NHẬP</button>
+            <button class="btn-main" id="btn-login">ĐĂNG NHẬP HỆ THỐNG</button>
         </div>
     </div>
 
     <div id="main-app" style="display: none;">
         <nav class="navbar">
-            <h3>QUẢN LÝ ĐỒ VẬT</h3>
+            <h3>QUẢN LÝ ĐỒ VẬT VÀ TỒN KHO</h3>
             <div class="nav-right">
-                <span id="user-display-name">👤 Đang tải...</span>
-                <button id="btn-logout" class="btn-danger">Đăng Xuất</button>
+                <span id="user-display-name">👤 LOADING...</span>
+                <button id="btn-logout" class="btn btn-danger">Đăng Xuất 🚪</button>
             </div>
         </nav>
 
         <div class="container">
-            <div id="module-tong-quan" class="module active">
-                <h2 class="module-title">Danh Sách Đồ Vật</h2>
-                
-                <div class="action-bar">
-                    <button id="btn-add-item" class="btn-success">➕ Thêm Đồ Vật Mới</button>
-                    <input type="text" id="search-item" placeholder="🔍 Tìm kiếm đồ vật...">
+            <h2 class="module-title">Tổng quan phân bổ vật tư</h2>
+            
+            <div class="dashboard-grid">
+                <div class="widget-box" style="border-left: 5px solid #2980b9;">
+                    <div style="font-weight: bold; color: #475569; margin-bottom: 5px;">Tổng Số Chủng Loại Đồ Vật</div>
+                    <span id="stat-total-types" style="font-size: 26px; font-weight: bold; color: #1e293b;">0</span>
                 </div>
+                <div class="widget-box" style="border-left: 5px solid #27ae60;">
+                    <div style="font-weight: bold; color: #475569; margin-bottom: 5px;">Tổng Số Lượng Vật Phẩm Lưu Kho</div>
+                    <span id="stat-total-qty" style="font-size: 26px; font-weight: bold; color: #1e293b;">0</span>
+                </div>
+            </div>
 
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>STT</th>
-                            <th>Mã Đồ Vật</th>
-                            <th>Tên Đồ Vật</th>
-                            <th>Danh Mục</th>
-                            <th>Vị Trí Lưu Trữ</th>
-                            <th>Số Lượng</th>
-                            <th>Tình Trạng</th>
-                            <th>Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventory-list">
-                        </tbody>
-                </table>
+            <div class="action-bar">
+                <button class="btn btn-success" onclick="openAddModal()">➕ Khai báo đồ vật mới</button>
+                <input type="text" id="search-item" class="search-box" placeholder="🔍 Gõ tên, mã, vị trí để tìm..." oninput="filterInventory()">
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">STT</th>
+                        <th style="width: 15%;">Mã Thiết Bị</th>
+                        <th style="width: 25%;">Tên Gọi Đồ Vật</th>
+                        <th style="width: 15%;">Danh Mục</th>
+                        <th style="width: 15%;">Vị Trí Lưu Trữ</th>
+                        <th style="width: 10%;">Số Lượng</th>
+                        <th style="width: 15%;">Trạng Thái</th>
+                        <th style="width: 15%;">Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody id="inventory-list">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" style="margin-top: 0; border-bottom: 1px solid #ddd; padding-bottom: 10px;">Thêm Vật Tư</h3>
+            <input type="hidden" id="item-key">
+            
+            <div class="form-group">
+                <label>Tên đồ vật / thiết bị</label>
+                <input type="text" id="item-name" placeholder="Ví dụ: Kymco K-Pipe 50cc, AirTag 2...">
+            </div>
+            <div class="form-group">
+                <label>Danh mục phân loại</label>
+                <select id="item-category">
+                    <option value="Điện tử">Điện tử (SmartHome, Apple Ecosystem...)</option>
+                    <option value="Gia dụng">Gia dụng & Đồ dùng</option>
+                    <option value="Công cụ">Công cụ & Thiết bị phần cứng</option>
+                    <option value="Văn phòng phẩm">Văn phòng phẩm</option>
+                    <option value="Phương tiện">Phương tiện vận tải</option>
+                    <option value="Khác">Khác</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vị trí lưu trữ chi tiết</label>
+                <input type="text" id="item-location" placeholder="Ví dụ: Kệ A1, Tủ điện, Thùng xe...">
+            </div>
+            <div class="form-group">
+                <label>Số lượng tồn thực tế</label>
+                <input type="number" id="item-quantity" min="1" value="1">
+            </div>
+            <div class="form-group">
+                <label>Tình trạng / Trạng thái luồng</label>
+                <select id="item-status">
+                    <option value="Tốt">✓ Sẵn sàng / Hoạt động tốt</option>
+                    <option value="Bảo trì">🔧 Đang bảo trì / Kiểm sửa</option>
+                    <option value="Hỏng">❌ Đã hỏng / Chờ thanh lý</option>
+                    <option value="Mất">⚠️ Đã mất / Thất lạc</option>
+                </select>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" style="background:#7f8c8d; color:white;" onclick="closeModal()">Hủy bỏ</button>
+                <button class="btn btn-success" onclick="saveInventoryItem()">Lưu thông tin</button>
             </div>
         </div>
     </div>
