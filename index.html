@@ -788,6 +788,220 @@
             </div>
         </div>
     </div>
+
+    <div id="module-thoi-gian" class="module">
+        <h2 class="module-title">Thông Tin Thời Gian & Nhật Ký Hoạt Động</h2>
+        <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div>
+                <div class="form-group" style="margin: 5px 0; max-width: 100%;">
+                    <label>Từ ngày (Bắt đầu tuần):</label>
+                    <div class="date-wrapper" style="width: 160px;">
+                        <span class="date-display" id="display-tu-ngay"></span>
+                        <input type="date" id="input-tu-ngay">
+                    </div>
+                </div>
+                <div class="form-group" style="margin: 5px 0; max-width: 100%;">
+                    <label>Đến ngày (Chúa nhật):</label>
+                    <input type="text" id="input-den-ngay" readonly style="width: 160px;">
+                </div>
+            </div>
+            <div>
+                <div class="form-group" style="margin: 5px 0; max-width: 100%;">
+                    <label>Tuần:</label>
+                    <input type="text" id="input-tuan" readonly style="width: 160px;">
+                </div>
+                <div class="form-group" style="margin: 5px 0; max-width: 100%;">
+                    <label>Tháng/Năm:</label>
+                    <input type="text" id="input-thang-nam" readonly style="width: 160px;">
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: bold; font-size: 14px;">🔍 Bộ lọc theo ngày:</span>
+                <input type="date" id="tg-bo-loc-ngay" onchange="locNhatKyTheoNgay()" style="padding: 4px; font-family: inherit; font-size: 14px; border: 1px solid #aaa;">
+                <button class="btn-select" style="padding: 4px 10px; margin: 0; font-size: 13px;" onclick="datLaiBoLocThoiGian()">Đặt lại</button>
+            </div>
+            <button class="btn-sample" style="margin: 0; padding: 5px 12px; background-color: #27ae60;" onclick="xuatLichSuThaoTac()">📥 Xuất lịch sử (.TXT)</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin-bottom: 25px;">
+            <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; display: flex; flex-direction: column;">
+                <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 10px; color: #0f172a; display: flex; justify-content: space-between;">
+                    <span>📜 Nhật ký thao tác & Hoạt động</span>
+                    <span style="font-size: 12px; color: #64748b; font-weight: normal;">Gần nhất</span>
+                </div>
+                <div style="max-height: 320px; overflow-y: auto; font-size: 13px; line-height: 1.6; padding-right: 5px;" id="tg-container-nhat-ky"></div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: #fffbeb; border: 1px solid #fef3c7; padding: 12px; border-radius: 8px;">
+                    <div style="font-weight: bold; color: #b45309; margin-bottom: 5px;">🔔 Nhắc nhở & Cảnh báo hạn</div>
+                    <div style="font-size: 13px; line-height: 1.5;" id="tg-container-nhac-nho"></div>
+                </div>
+
+                <div style="background: #fff; border: 1px solid #cbd5e1; padding: 12px; border-radius: 8px; font-size: 13px;">
+                    <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 8px; color: #0f172a;">📅 Lịch hệ thống định kỳ</div>
+                    <div style="line-height: 1.6;">
+                        <div style="margin-bottom: 4px;">• <b>Lịch kiểm kê:</b> Định kỳ 23h59 Chúa Nhật hàng tuần.</div>
+                        <div style="margin-bottom: 4px;">• <b>Lịch bảo trì:</b> Ngày 22 hàng tháng (Thiên Trường Software).</div>
+                        <div>• <b>Lịch bảo hành:</b> Tra cứu tự động tại mục Quản lý lỗi trang Thiết bị.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px;">
+            <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 12px;">📊 Timeline phân bổ chi tiết của từng vật phẩm (Tuần hiện tại)</div>
+            <div style="max-height: 200px; overflow-y: auto; font-size: 13px;">
+                <table class="modal-table" style="margin-top: 0; width: 100%;">
+                    <thead>
+                        <tr style="background-color: #f8fafc; position: sticky; top: 0; z-index: 2;">
+                            <th style="width: 10%;">STT</th>
+                            <th style="width: 45%;">Tên vật tư / Đối tượng</th>
+                            <th style="width: 25%;">Thời gian (Thứ)</th>
+                            <th style="width: 20%;">Trạng thái luồng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tg-table-timeline-vattu">
+                        <tr><td colspan="4" style="color:#666; font-style:italic; text-align:center;">Không có vật tư nào được tạo trong tuần này.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="module-nhap-kho" class="module">
+        <h2 class="module-title">Quản Lý Nhập Kho</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #fff; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e1;">
+            <button class="btn-sample" style="margin:0; background:#27ae60;" onclick="moTabNhapKho('tao-phieu')">➕ Tạo phiếu nhập</button>
+            <button class="btn-sample" style="margin:0; background:#34495e;" onclick="moTabNhapKho('lich-su')">📜 Lịch sử & Quản lý phiếu</button>
+            <div style="flex-grow: 1;"></div>
+            <button class="btn-sample" style="margin:0; background:#8e44ad;" onclick="alert('Kích hoạt module đọc Excel. Vui lòng chọn file .xlsx hoặc .csv')">📊 Nhập từ file Excel</button>
+            <button class="btn-sample" style="margin:0; background:#d35400;" onclick="alert('Khởi động Camera/Máy quét Barcode. Đưa mã vạch vào vùng nhận diện.')">📷 Quét QR/Barcode</button>
+        </div>
+
+        <div id="tab-tao-phieu-nhap">
+            <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px;">Thông Tin Nghiệp Vụ Phiếu Nhập</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="margin: 0; max-width: 100%;">
+                        <label>Phân loại nghiệp vụ:</label>
+                        <select id="nk-loai" style="padding: 8px; width: 250px; font-family: inherit; border: 1px solid #777;">
+                            <option value="Nhập từ nhà cung cấp">Nhập từ nhà cung cấp</option>
+                            <option value="Nhập mua mới">Nhập mua mới</option>
+                            <option value="Nhập trả hàng">Nhập trả hàng</option>
+                            <option value="Nhập điều chuyển">Nhập điều chuyển</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin: 0; max-width: 100%;">
+                        <label>Nguồn / Người giao hàng:</label>
+                        <input type="text" id="nk-nguon" style="width: 250px;" placeholder="Tên đối tác, kho nguồn...">
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px;">
+                <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px;">Danh Sách Vật Tư Nhập Theo Kế Hoạch</div>
+                <table class="modal-table" style="margin-top: 0;">
+                    <thead>
+                        <tr style="background-color: #f8fafc;">
+                            <th style="width: 5%;">STT</th>
+                            <th style="width: 35%;">Tên vật tư / Mã định danh</th>
+                            <th style="width: 15%;">Số lượng</th>
+                            <th style="width: 20%;">Đơn giá (VNĐ)</th>
+                            <th style="width: 20%;">Thành tiền</th>
+                            <th style="width: 5%;">Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nk-tbody"></tbody>
+                </table>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <button class="btn-add-row" style="margin-top: 0;" onclick="themDongNhapKho()">+ Thêm dòng thủ công</button>
+                    <div style="font-size: 18px; font-weight: bold;">
+                        Tổng giá trị lô hàng: <span id="nk-tong-tien" style="color: #d32f2f;">0 đ</span>
+                    </div>
+                </div>
+
+                <div style="text-align: right; margin-top: 25px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <button class="btn-sample" style="background-color: #f39c12; margin: 0 10px 0 0;" onclick="alert('Đã lưu dữ liệu vào bản nháp. Bạn có thể duyệt sau.')">Lưu Nháp</button>
+                    <button class="btn-save" style="width: auto; padding: 10px 30px; display: inline-block; margin: 0;" onclick="taoPhieuNhap()">Lưu & Trình Duyệt Phiếu</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-lich-su-nhap" style="display: none;">
+            <div style="background: #fff; border: 1px solid #cbd5e1; padding: 15px; border-radius: 8px;">
+                <div style="font-weight: bold; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 15px;">Danh Sách Phiếu Nhập & Phê Duyệt</div>
+                <table class="modal-table" style="margin-top: 0;">
+                    <thead>
+                        <tr style="background-color: #f8fafc;">
+                            <th>Mã Phiếu</th>
+                            <th>Ngày lập</th>
+                            <th>Nghiệp vụ / Nguồn</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Hành động (Duyệt/Hủy/In)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="nk-lich-su-tbody">
+                        <tr><td colspan="6" style="color:#666; font-style:italic;">Hệ thống chưa ghi nhận dữ liệu phiếu nhập mới...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+    <div id="module-ban-giao" class="module">
+        <h2 class="module-title">Kiểm Kê Đầu Tuần</h2>
+        <div class="form-group">
+            <label>Kho chính (VNĐ):</label>
+            <input type="text" id="input-tien-mat" value="0">
+        </div>
+        <div class="form-group">
+            <label>Kho phụ (VNĐ):</label>
+            <input type="text" id="input-ngan-hang" value="0">
+        </div>
+        
+        <h3 style="text-align: center; font-size: 16px; margin-top: 20px; border-bottom: 1px dashed #ccc; padding-bottom: 5px;">Dự Kiến Nhập Kho</h3>
+        <div class="form-group">
+            <label>Kho chính (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-tm" value="0" class="readonly-input" readonly onclick="openModalThuNhapTM()" style="cursor: pointer !important;" title="Bấm để nhập mệnh giá tiền mặt">
+        </div>
+        <div class="form-group">
+            <label>Kho phụ (VNĐ):</label>
+            <input type="text" id="input-thu-nhap-nh" value="0" class="readonly-input" readonly onclick="openModalThuNhapNH()" style="cursor: pointer !important;" title="Bấm để nhập thu nhập qua ngân hàng">
+        </div>
+
+        <div class="form-group" style="border-top: 1px solid #000; padding-top: 15px; margin-top: 25px;">
+            <label>Tổng giá trị vật tư đầu tuần:</label>
+            <span id="hien-thi-tong-ban-giao" class="total-display">0 đ</span>
+        </div>
+
+        <div style="margin-top: 30px; border-top: 2px solid #000; padding-top: 20px;">
+            <h3 style="text-align: center; text-transform: uppercase; margin-top: 0;">Dự kiến xuất vật tư tuần</h3>
+            <table>
+                <thead>
+                    <tr><th>Điện tử</th><th>Gia dụng</th><th>VP Phẩm</th><th>Công cụ</th><th>Tiêu hao</th><th>Khác</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="summary-ansang">0 đ</td>
+                        <td id="summary-antrua">0 đ</td>
+                        <td id="summary-antoi">0 đ</td>
+                        <td id="summary-dichuyen">0 đ</td>
+                        <td id="summary-tietkiem">0 đ</td>
+                        <td id="summary-khac">0 đ</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="total-display" style="text-align: right; margin-top: 10px;">
+                Tổng xuất dự kiến tuần: <span id="dudinh-tong" style="color: #d32f2f;">0 đ</span>
+            </div>
+        </div>
+    </div>
     <div id="module-thoi-gian" class="module">
         <h2 class="module-title">Thông Tin Thời Gian & Nhật Ký Hoạt Động</h2>
         
@@ -2063,9 +2277,8 @@ function xuatLichSuThaoTac() {
         daysArr.forEach(d => {
             if (!expenseData[d]) expenseData[d] = {};
             catsArr.forEach(c => {
-        let el = document.getElementById(`summary-${c}`); // Đồng bộ ID từ dudinh sang summary để khớp HTML mới
-        if (el) el.innerText = formatVND(sums[c]);
-    });
+                if (!Array.isArray(expenseData[d][c])) expenseData[d][c] = [];
+            });
         });
     }
 
