@@ -672,7 +672,7 @@
 
 <div class="container">
     
-    <div id="module-tong-quan" class="module">
+    <div id="module-tong-quan" class="module active">
         <h2 class="module-title">Tổng quan hệ thống</h2>
         
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
@@ -740,7 +740,7 @@
         </div>
     </div>
 
-    <div id="module-ban-giao" class="module active">
+    <div id="module-ban-giao" class="module">
         <h2 class="module-title">Kiểm Kê Đầu Tuần</h2>
         <div class="form-group">
             <label>Kho chính (VNĐ):</label>
@@ -3892,19 +3892,16 @@ function capNhatDashboardTongQuan() {
     document.getElementById('tq-chart-bar-container').innerHTML = chartHtml;
 }
     async function startOriginalApp() { 
-        // 1. Calculate max valid date
-        // ...
         const currentMonday = getMonday(getGMT7Date());
         let maxMonday = new Date(currentMonday);
         maxMonday.setDate(currentMonday.getDate() + 7);
         let maxDateStr = formatToInputDate(maxMonday);
 
-        // Apply restrictions
+        // Áp dụng giới hạn ngày tháng
         document.getElementById('input-tu-ngay').setAttribute('max', maxDateStr);
         document.getElementById('input-in-ngay').setAttribute('max', maxDateStr);
 
         renderWeekUI(); 
-        
         ensureExpenseDataStructure();
 
         await loadFromFirebase(); 
@@ -3916,6 +3913,9 @@ function capNhatDashboardTongQuan() {
         updateInNgayDisplay();
 
         loadWeek(targetMonday); 
+        
+        // MẶC ĐỊNH CHUYỂN SANG TỔNG QUAN KHI ĐĂNG NHẬP THÀNH CÔNG
+        switchModule('module-tong-quan');
         setTimeout(() => { capNhatDashboardTongQuan(); }, 300);
 
         // Gắn sự kiện Auto-Save cho các mục trong Ghi chú
